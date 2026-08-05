@@ -1,4 +1,4 @@
-# To-Do
+# Round-Tuit
 
 A ranked to-do list that stores its data as a single JSON file in your own Google Drive,
 so Windows and Android read and write the same list.
@@ -63,7 +63,7 @@ You need an OAuth client ID so the app can ask for permission to your Drive.
    ```
 
    The two odd-numbered ports are fallbacks for the desktop executable. Port 8000 is a
-   popular one — plenty of other software grabs it — and if To-Do can't have it, it moves
+   popular one — plenty of other software grabs it — and if Round-Tuit can't have it, it moves
    to the next in the list. Sign-in only works on origins listed here, so register all
    three or a fallback will fail to sign in.
 
@@ -117,7 +117,7 @@ in it. Your to-do data lives in your Drive, never in the repo.
 
 ## 4. Windows executable (portable)
 
-`dist/ToDo.exe` is one self-contained file, about 80MB, holding the web app and a Node
+`dist/RoundTuit.exe` is one self-contained file, about 80MB, holding the web app and a Node
 runtime. Copy it to any Windows PC — USB stick, network share, wherever — and double-click.
 No install, no admin rights, nothing left behind.
 
@@ -139,7 +139,7 @@ Things worth knowing:
 - **Each port is claimed on both IPv4 and IPv6.** `localhost` resolves to `::1` and
   `127.0.0.1`, and browsers usually try `::1` first — while Windows will happily let you bind
   `127.0.0.1:8000` when another program already holds `[::]:8000`. Binding only IPv4 meant the
-  browser could land on that other program instead, showing *its* page inside the To-Do
+  browser could land on that other program instead, showing *its* page inside the Round-Tuit
   window. If either family is unavailable, the port is skipped entirely.
 - **Running it twice is harmless.** The second copy notices the first and just opens a window.
 - **Windows SmartScreen may warn on first run**, because the exe isn't code-signed. *More info
@@ -151,11 +151,16 @@ Things worth knowing:
 
 ## 5. Install it as a web app
 
-**Windows** — open the Pages URL in Edge or Chrome, then *⋯ menu → Apps → Install this site as
-an app*. You get a real window and a Start Menu entry.
+Easiest on every platform: open the site and press the **Install** button in the top bar. It
+appears only when the browser considers the app installable and it isn't installed already, so
+if you can see it, it will work.
 
-**Android** — open the same URL in Chrome, then *⋮ menu → Add to Home screen*. It launches
-without browser chrome and looks like any other app.
+Failing that, the browser menus still do it. **Windows** — *⋯ menu → Apps → Install this site
+as an app*. **Android** — *⋮ menu → Add to Home screen*. **iPhone** — Safari doesn't support
+the Install button, so it's *Share → Add to Home Screen*.
+
+Either way you get a real window, no browser chrome, and an entry in the Start Menu or on the
+home screen.
 
 Both installs are just the website, so a push to `main` updates both. Reopen the app to pick
 up a change.
@@ -231,6 +236,6 @@ load. Which tab is active is *not* stored here; that's per-device, in browser st
 | `manifest.webmanifest`, `icons/` | Install metadata and app icons |
 | `desktop/server.js` | The portable exe: serves the embedded app, opens the window |
 | `desktop/sea-config.json` | Which files get embedded. Also the dev-mode allowlist |
-| `desktop/build.ps1` | Builds `dist/ToDo.exe` |
+| `desktop/build.ps1` | Builds `dist/RoundTuit.exe` |
 
 Changing a shell file? Bump `CACHE` in `sw.js` so devices drop the old copy.

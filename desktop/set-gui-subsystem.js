@@ -5,7 +5,7 @@
 // a console purely from this one field in the PE header — before any of our
 // code runs, so it can't be undone from inside the process.
 //
-// Usage: node desktop/set-gui-subsystem.js dist/ToDo.exe
+// Usage: node desktop/set-gui-subsystem.js dist/RoundTuit.exe
 
 "use strict";
 

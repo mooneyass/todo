@@ -1,4 +1,4 @@
-# Builds dist/ToDo.exe — a single portable file with the web app inside it.
+# Builds dist/RoundTuit.exe — a single portable file with the web app inside it.
 # Run from anywhere:   ./desktop/build.ps1
 
 $ErrorActionPreference = 'Stop'
@@ -8,7 +8,7 @@ Set-Location $root
 
 $build = Join-Path $root 'desktop/build'
 $dist  = Join-Path $root 'dist'
-$exe   = Join-Path $dist 'ToDo.exe'
+$exe   = Join-Path $dist 'RoundTuit.exe'
 
 New-Item -ItemType Directory -Force -Path $build, $dist | Out-Null
 
@@ -20,7 +20,7 @@ function Assert-LastExit($what) {
 }
 
 # A running copy holds a lock on the file and every write below would fail.
-$running = Get-Process -Name 'ToDo' -ErrorAction SilentlyContinue |
+$running = Get-Process -Name 'RoundTuit' -ErrorAction SilentlyContinue |
            Where-Object { $_.Path -eq $exe }
 if ($running) {
   Write-Host '0/4  Stopping the running copy...' -ForegroundColor DarkGray

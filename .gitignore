@@ -1,4 +1,4 @@
-# Build output — ToDo.exe is ~80MB, far too big for a repo. Rebuild it instead:
+# Build output — RoundTuit.exe is ~80MB, far too big for a repo. Rebuild it instead:
 #   ./desktop/build.ps1
 dist/
 desktop/build/

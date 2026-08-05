@@ -19,7 +19,7 @@
 //
 // Runs either way:
 //   node desktop/server.js     — reads the web files from disk, logs to console
-//   ToDo.exe                   — reads them from inside itself, no console
+//   RoundTuit.exe              — reads them from inside itself, no console
 
 "use strict";
 
@@ -87,7 +87,7 @@ function notify(message, isError = false) {
       "-NonInteractive",
       "-Command",
       "Add-Type -AssemblyName System.Windows.Forms;" +
-        `[System.Windows.Forms.MessageBox]::Show('${text}','To-Do',` +
+        `[System.Windows.Forms.MessageBox]::Show('${text}','Round-Tuit',` +
         `[System.Windows.Forms.MessageBoxButtons]::OK,` +
         `[System.Windows.Forms.MessageBoxIcon]::${icon}) | Out-Null`,
     ],
@@ -302,9 +302,9 @@ async function start() {
   }
 
   notify(
-    `To-Do couldn't start: every port it can use is taken by another program.\n\n` +
+    `Round-Tuit couldn't start: every port it can use is taken by another program.\n\n` +
       `Tried: ${PORTS.join(", ")}.\n\n` +
-      `To-Do can only use these specific ports, because they're the addresses ` +
+      `Round-Tuit can only use these specific ports, because they're the addresses ` +
       `registered with Google for sign-in — any other port would be rejected.\n\n` +
       `To see what's using them, run this in PowerShell:\n` +
       `    Get-NetTCPConnection -LocalPort ${PORTS.join(",")} -State Listen\n\n` +
@@ -320,7 +320,7 @@ start().then(({ port, servers }) => {
   openWindow(port);
 
   if (!sea) {
-    console.log(`\n  To-Do is running at ${appUrl(port)}`);
+    console.log(`\n  Round-Tuit is running at ${appUrl(port)}`);
     console.log("  Close the app window, or press Ctrl+C, to quit.\n");
   }
 

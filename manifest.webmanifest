@@ -1,7 +1,7 @@
 {
-  "name": "To-Do",
-  "short_name": "To-Do",
-  "description": "A simple ranked to-do list stored in Google Drive.",
+  "name": "Round-Tuit",
+  "short_name": "Round-Tuit",
+  "description": "The things you'll get around to. A simple ranked to-do list stored in your Google Drive.",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",
