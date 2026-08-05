@@ -28,6 +28,7 @@
   const $ = (id) => document.getElementById(id);
   const els = {
     status: $("status"),
+    install: $("install-btn"),
     account: $("account-btn"),
     tabs: $("tabs"),
     signin: $("signin"),
@@ -759,6 +760,31 @@
       e.preventDefault();
       e.returnValue = "";
     }
+  });
+
+  // Chrome buries "Add to Home screen" in a menu that moves between versions,
+  // so ask for the install directly. The event only fires when the browser
+  // considers the app installable and it isn't installed already — meaning the
+  // button appears exactly when it would actually do something.
+  let installPrompt = null;
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault(); // keep Chrome's own banner from competing with the button
+    installPrompt = e;
+    els.install.hidden = false;
+  });
+
+  els.install.addEventListener("click", async () => {
+    if (!installPrompt) return;
+    els.install.hidden = true;
+    installPrompt.prompt();
+    await installPrompt.userChoice; // resolves whether they accept or dismiss
+    installPrompt = null;
+  });
+
+  window.addEventListener("appinstalled", () => {
+    installPrompt = null;
+    els.install.hidden = true;
   });
 
   if ("serviceWorker" in navigator) {
