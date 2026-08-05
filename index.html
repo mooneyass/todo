@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>To-Do</title>
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16181c" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div class="topbar">
+  <header class="bar">
+    <h1>To-Do</h1>
+    <span id="status" class="status"></span>
+    <button id="account-btn" class="ghost" type="button" hidden>Sign out</button>
+  </header>
+
+  <nav id="tabs" class="tabs" aria-label="Lists" hidden></nav>
+</div>
+
+<main>
+  <!-- Shown until we have a Google access token -->
+  <section id="signin" class="card" hidden>
+    <h2>Sign in to Google</h2>
+    <p class="muted">
+      Your list is stored as <code>tododata/todos.json</code> in your Google Drive.
+      This app uses Drive's restricted <code>drive.file</code> permission, so it can only
+      ever see the folder and file it created &mdash; nothing else in your Drive.
+    </p>
+    <button id="signin-btn" class="primary" type="button">Sign in with Google</button>
+    <p id="signin-error" class="error" hidden></p>
+    <p id="origin-hint" class="muted" hidden></p>
+  </section>
+
+  <!-- Shown when config.js has no client ID yet -->
+  <section id="setup" class="card" hidden>
+    <h2>Setup needed</h2>
+    <p class="muted">
+      Open <code>config.js</code> and paste your Google OAuth client ID into
+      <code>GOOGLE_CLIENT_ID</code>. Step-by-step instructions are in <code>README.md</code>.
+    </p>
+  </section>
+
+  <section id="app" hidden>
+    <ul id="list" class="list"></ul>
+    <p id="empty" class="muted empty" hidden>Nothing here yet. Add your first item.</p>
+    <button id="add-btn" class="add" type="button">+ Add item</button>
+    <p id="full-note" class="muted note" hidden>List is full at 20 items. Delete something to add more.</p>
+    <p class="muted hint">Double-click a tab to rename it &mdash; on a phone, press and hold. <b>+</b> starts a new list.</p>
+  </section>
+</main>
+
+<dialog id="conflict-dlg">
+  <h2>This list changed somewhere else</h2>
+  <p class="muted">
+    Another device saved <code>todos.json</code> after this one loaded it.
+    Keeping both versions isn't possible &mdash; pick one.
+  </p>
+  <div class="dlg-actions">
+    <button id="conflict-theirs" class="primary" type="button">Load the other version</button>
+    <button id="conflict-mine" class="danger" type="button">Overwrite with mine</button>
+  </div>
+</dialog>
+
+<dialog id="delete-dlg">
+  <h2>Delete this item?</h2>
+  <p id="delete-what" class="muted"></p>
+  <div class="dlg-actions">
+    <button id="delete-cancel" class="ghost" type="button">Cancel</button>
+    <button id="delete-confirm" class="danger" type="button">Delete</button>
+  </div>
+</dialog>
+
+<dialog id="delete-list-dlg">
+  <h2>Delete this list?</h2>
+  <p id="delete-list-what" class="muted"></p>
+  <div class="dlg-actions">
+    <button id="delete-list-cancel" class="ghost" type="button">Cancel</button>
+    <button id="delete-list-confirm" class="danger" type="button">Delete list</button>
+  </div>
+</dialog>
+
+<script src="config.js"></script>
+<!-- Inert unless the URL has ?mock=1. See dev/mock.js. -->
+<script src="dev/mock.js"></script>
+<script src="drive.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

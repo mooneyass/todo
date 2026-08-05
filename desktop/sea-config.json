@@ -1,0 +1,20 @@
+{
+  "main": "desktop/server.js",
+  "output": "desktop/build/sea-prep.blob",
+  "disableExperimentalSEAWarning": true,
+  "useSnapshot": false,
+  "useCodeCache": false,
+  "assets": {
+    "index.html": "index.html",
+    "app.css": "app.css",
+    "app.js": "app.js",
+    "drive.js": "drive.js",
+    "config.js": "config.js",
+    "manifest.webmanifest": "manifest.webmanifest",
+    "sw.js": "sw.js",
+    "dev/mock.js": "dev/mock.js",
+    "icons/icon-192.png": "icons/icon-192.png",
+    "icons/icon-512.png": "icons/icon-512.png",
+    "icons/icon-maskable-512.png": "icons/icon-maskable-512.png"
+  }
+}
