@@ -133,6 +133,7 @@
           ...rest,
           completedAt: it?.completedAt || now(),
           fromList: typeof it?.fromList === "string" ? it.fromList : "",
+          fromListId: typeof it?.fromListId === "string" ? it.fromListId : "",
         };
       })
       .sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)))
@@ -574,10 +575,21 @@
     const actions = document.createElement("div");
     actions.className = "panel-actions";
 
-    if (!done) {
+    if (done) {
+      const pry = document.createElement("button");
+      pry.type = "button";
+      pry.className = "accent";
+      pry.textContent = "Pry Bar";
+      const target = pryTarget(item);
+      // Say where it's going before the click, so it can't surprise you when
+      // the original list has been renamed or deleted since.
+      pry.title = target ? `Put it back in “${target.name}”` : "No list to put it back in";
+      pry.addEventListener("click", () => pryBack(item.id));
+      actions.appendChild(pry);
+    } else {
       const nailed = document.createElement("button");
       nailed.type = "button";
-      nailed.className = "success";
+      nailed.className = "accent";
       nailed.textContent = "Nailed It!";
       nailed.addEventListener("click", () => completeItem(item.id));
       actions.appendChild(nailed);
@@ -652,6 +664,7 @@
       updatedAt: item.updatedAt,
       completedAt: now(),
       fromList: list.name,
+      fromListId: list.id, // id survives a rename; the name survives an id change
     });
     if (doc.completed.length > cfg.MAX_COMPLETED) {
       doc.completed.length = cfg.MAX_COMPLETED; // oldest fall off the end
@@ -661,6 +674,45 @@
     renumber();
     touch();
     render();
+  }
+
+  // Where a finished item would land if pried back: the list it came from if
+  // that still exists, by id first so a rename doesn't lose it, then by name in
+  // case the file was hand-edited. Failing both, the first list.
+  function pryTarget(item) {
+    return (
+      doc.lists.find((l) => l.id === item.fromListId) ||
+      doc.lists.find((l) => l.name === item.fromList) ||
+      doc.lists[0]
+    );
+  }
+
+  // Undo a "Nailed It!". Goes to the bottom of the target list rather than
+  // reclaiming its old rank — that rank belongs to something else now, and
+  // shoving everything down to make room is a worse surprise than appending.
+  function pryBack(id) {
+    const idx = doc.completed.findIndex((i) => i.id === id);
+    if (idx < 0) return;
+
+    const item = doc.completed[idx];
+    const target = pryTarget(item);
+    if (!target) return;
+
+    if (target.items.length >= cfg.MAX_ITEMS) {
+      setStatus(
+        `“${target.name}” is full at ${cfg.MAX_ITEMS} items — delete something there first.`,
+        true
+      );
+      return;
+    }
+
+    doc.completed.splice(idx, 1);
+    const { completedAt, fromList, fromListId, ...rest } = item;
+    target.items.push({ ...rest, rank: target.items.length + 1 });
+
+    if (expandedId === id) expandedId = null;
+    touch();
+    render(); // stays on the finished tab; the item simply leaves it
   }
 
   function askDelete(id) {

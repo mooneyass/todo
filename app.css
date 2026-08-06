@@ -219,9 +219,9 @@ button {
 .primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
 .ghost   { background: transparent; color: var(--muted); border-color: var(--line); }
 .danger  { background: transparent; color: var(--danger); border-color: var(--danger); }
-.success { background: transparent; color: var(--accent); border-color: var(--accent); }
+.accent  { background: transparent; color: var(--accent); border-color: var(--accent); }
 
-.ghost:hover, .danger:hover, .success:hover { background: var(--surface-2); }
+.ghost:hover, .danger:hover, .accent:hover { background: var(--surface-2); }
 
 button:focus-visible,
 select:focus-visible,

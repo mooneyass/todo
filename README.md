@@ -15,6 +15,10 @@ so Windows and Android read and write the same list.
   lands in the pinned **Nailed It!** tab after the `+` — showing the date you finished it
   instead of a ranking. Everything finished goes there whatever list it came from, and it
   stays even if that list is later deleted. Keeps the 50 most recent; older ones drop off.
+- **"Pry Bar" undoes it.** A finished item goes back to the bottom of the list it came from —
+  found by id, so a rename doesn't lose it, falling back to the first list if that list is
+  gone. The button's tooltip names the destination before you click. It appends rather than
+  reclaiming its old rank, since that rank belongs to something else by now.
 - **Storage** is `tododata/todos.json` in your Drive — every list in the one file. Both devices
   use that same file.
 - **Conflicts** are detected, not guessed at: if the other device saved first, you're asked
