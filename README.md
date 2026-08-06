@@ -209,7 +209,8 @@ ever want to.
           "rank": 1,
           "title": "Renew passport",
           "content": "Form DS-82.\nPhoto place on 5th closes at 6.",
-          "createdAt": "2026-08-04T18:19:02.000Z"
+          "createdAt": "2026-08-04T18:19:02.000Z",
+          "updatedAt": "2026-08-04T18:19:02.000Z"
         }
       ]
     }
@@ -220,6 +221,7 @@ ever want to.
       "title": "Book the ferry",
       "content": "",
       "createdAt": "2026-08-01T09:12:00.000Z",
+      "updatedAt": "2026-08-02T14:03:00.000Z",
       "completedAt": "2026-08-04T17:55:03.000Z",
       "fromList": "To-Do"
     }
@@ -228,6 +230,11 @@ ever want to.
 ```
 
 Ranks are always the contiguous run `1..n` within each list.
+
+`updatedAt` moves only when an item's own title or notes change — not when its rank does.
+Inserting an item renumbers everything below it, which would otherwise mark half the list as
+edited today. Items written before this field existed count as never edited. The expanded
+panel shows both dates between the buttons, and omits "Edited" when nothing has changed.
 
 `completed` sits at the root rather than inside a list — that's deliberate, so finished items
 survive the list they came from being deleted. `fromList` records where each one started, and

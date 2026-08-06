@@ -355,10 +355,20 @@ textarea:focus-visible {
   margin-top: 10px;
 }
 
-/* Finished items have only Delete, so it keeps its right-hand position */
-.panel-actions.right { justify-content: flex-end; }
+.panel-actions button { flex: none; min-height: 38px; font-size: 14px; }
 
-.panel-actions button { min-height: 38px; font-size: 14px; }
+/* Created / edited dates, filling the gap between the buttons. Takes the slack
+   so the buttons stay pinned to the edges, and wraps rather than squashing them
+   on a narrow screen. */
+.stamps {
+  flex: 1;
+  min-width: 0;
+  padding: 0 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+}
 
 /* ---------- add ---------- */
 

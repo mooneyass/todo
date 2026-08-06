@@ -98,6 +98,8 @@
       title: typeof it?.title === "string" ? it.title : "",
       content: typeof it?.content === "string" ? it.content : "",
       createdAt: it?.createdAt || now(),
+      // Items written before this field existed count as never edited.
+      updatedAt: it?.updatedAt || it?.createdAt || now(),
     });
 
     const mkList = (l, i) => {
@@ -446,14 +448,37 @@
       : `List is full at ${cfg.MAX_ITEMS} items. Delete something to add more.`;
   }
 
-  // Compact date for the finished tab. Year only when it isn't this one, so the
-  // column stays narrow for the common case.
-  function doneDate(iso) {
+  // Compact date. Year only when it isn't this one, so the column stays narrow
+  // for the common case.
+  function shortDate(iso) {
     const d = new Date(iso);
     if (isNaN(d.getTime())) return "—";
     const opts = { day: "numeric", month: "short" };
     if (d.getFullYear() !== new Date().getFullYear()) opts.year = "2-digit";
     return d.toLocaleDateString(undefined, opts);
+  }
+
+  // Created / last edited, sitting between the two buttons. "Edited" is left off
+  // when nothing has changed since creation — repeating the same date twice is
+  // noise. Hovering gives the full timestamps.
+  function stamps(item) {
+    const el = document.createElement("div");
+    el.className = "stamps";
+
+    const created = new Date(item.createdAt);
+    const edited = new Date(item.updatedAt || item.createdAt);
+    const wasEdited = edited - created > 1000; // NaN if either is unparseable → false
+
+    el.textContent = wasEdited
+      ? `Created ${shortDate(item.createdAt)} · Edited ${shortDate(item.updatedAt)}`
+      : `Created ${shortDate(item.createdAt)}`;
+
+    const full = (d) => (isNaN(d.getTime()) ? "unknown" : d.toLocaleString());
+    el.title = wasEdited
+      ? `Created ${full(created)}\nLast edited ${full(edited)}`
+      : `Created ${full(created)}\nNot edited since`;
+
+    return el;
   }
 
   function renderItem(item, done = false) {
@@ -467,7 +492,7 @@
       // The ranking is meaningless once it's finished; the date is what you want.
       lead = document.createElement("span");
       lead.className = "done-date";
-      lead.textContent = doneDate(item.completedAt);
+      lead.textContent = shortDate(item.completedAt);
       lead.title = item.fromList ? `Finished from “${item.fromList}”` : "Finished";
     } else {
       // --- rank dropdown: 1..MAX_ITEMS, with ranks past the end of the list
@@ -505,6 +530,10 @@
     titleInput.placeholder = "Title";
     titleInput.addEventListener("input", () => {
       item.title = titleInput.value;
+      // Only the item's own text counts as an edit. Ranking deliberately
+      // doesn't: inserting one item renumbers every item below it, which would
+      // otherwise mark the whole list as edited today.
+      item.updatedAt = now();
       touch();
     });
     titleInput.addEventListener("keydown", (e) => {
@@ -531,6 +560,7 @@
     content.placeholder = "Notes…";
     content.addEventListener("input", () => {
       item.content = content.value;
+      item.updatedAt = now();
       autoGrow(content);
       touch();
     });
@@ -542,7 +572,7 @@
     del.addEventListener("click", () => askDelete(item.id));
 
     const actions = document.createElement("div");
-    actions.className = "panel-actions" + (done ? " right" : "");
+    actions.className = "panel-actions";
 
     if (!done) {
       const nailed = document.createElement("button");
@@ -552,6 +582,7 @@
       nailed.addEventListener("click", () => completeItem(item.id));
       actions.appendChild(nailed);
     }
+    actions.appendChild(stamps(item));
     actions.appendChild(del);
 
     const panel = document.createElement("div");
@@ -587,12 +618,14 @@
   function addItem() {
     const list = activeList();
     if (!list || list.items.length >= cfg.MAX_ITEMS) return;
+    const stamp = now();
     const item = {
       id: uid(),
       rank: list.items.length + 1,
       title: "",
       content: "",
-      createdAt: now(),
+      createdAt: stamp,
+      updatedAt: stamp,
     };
     list.items.push(item);
     expandedId = item.id;
@@ -616,6 +649,7 @@
       title: item.title,
       content: item.content,
       createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
       completedAt: now(),
       fromList: list.name,
     });
