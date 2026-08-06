@@ -219,8 +219,9 @@ button {
 .primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
 .ghost   { background: transparent; color: var(--muted); border-color: var(--line); }
 .danger  { background: transparent; color: var(--danger); border-color: var(--danger); }
+.success { background: transparent; color: var(--accent); border-color: var(--accent); }
 
-.ghost:hover, .danger:hover { background: var(--surface-2); }
+.ghost:hover, .danger:hover, .success:hover { background: var(--surface-2); }
 
 button:focus-visible,
 select:focus-visible,
@@ -264,6 +265,24 @@ textarea:focus-visible {
   border: 1px solid var(--line);
   border-radius: 8px;
   cursor: pointer;
+}
+
+/* stands in for the rank dropdown on finished items */
+.done-date {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 74px;
+  height: var(--tap);
+  padding: 0 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
 }
 
 /* collapsed title: whole strip is the click target */
@@ -331,11 +350,15 @@ textarea:focus-visible {
 
 .panel-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between; /* Nailed It! left, Delete far right */
+  gap: 8px;
   margin-top: 10px;
 }
 
-.panel-actions .danger { min-height: 38px; font-size: 14px; }
+/* Finished items have only Delete, so it keeps its right-hand position */
+.panel-actions.right { justify-content: flex-end; }
+
+.panel-actions button { min-height: 38px; font-size: 14px; }
 
 /* ---------- add ---------- */
 

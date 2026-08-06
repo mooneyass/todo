@@ -1,6 +1,6 @@
 // Offline shell. Bump CACHE when you change any of the shell files so old
 // copies get evicted.
-const CACHE = "todo-shell-v8";
+const CACHE = "todo-shell-v9";
 
 const SHELL = [
   "./",

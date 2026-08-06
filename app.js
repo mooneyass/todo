@@ -48,7 +48,12 @@
     deleteListWhat: $("delete-list-what"),
   };
 
-  let doc = { schema: 2, updatedAt: null, lists: [] };
+  // The finished-items tab isn't a real list — it's synthesised from doc.completed,
+  // which lives at the root so items outlive the list they were finished in.
+  const DONE_ID = "__done__";
+  const DONE_NAME = "Nailed It!";
+
+  let doc = { schema: 3, updatedAt: null, lists: [], completed: [] };
   let activeId = localStorage.getItem(ACTIVE_KEY) || null;
   let baseline = null;     // exact file text last seen in Drive, for conflict checks
   let dirty = false;       // local edits not yet in Drive
@@ -117,10 +122,32 @@
     }
     if (!lists.length) lists = [mkList({ name: "To-Do", items: [] }, 0)];
 
-    return { schema: 2, updatedAt: raw?.updatedAt || now(), lists };
+    // Newest first, then trimmed — so the cap drops the oldest, not whatever
+    // happened to be at the end of the file.
+    const completed = (Array.isArray(raw?.completed) ? raw.completed : [])
+      .map((it) => {
+        const { rank, ...rest } = mkItem(it); // finished items have no ranking
+        return {
+          ...rest,
+          completedAt: it?.completedAt || now(),
+          fromList: typeof it?.fromList === "string" ? it.fromList : "",
+        };
+      })
+      .sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)))
+      .slice(0, cfg.MAX_COMPLETED);
+
+    return { schema: 3, updatedAt: raw?.updatedAt || now(), lists, completed };
   }
 
-  const activeList = () => doc.lists.find((l) => l.id === activeId) || doc.lists[0];
+  const onDoneTab = () => activeId === DONE_ID;
+
+  // Undefined on the finished tab — there's no underlying list. Callers that can
+  // run from either tab must handle that.
+  const activeList = () =>
+    onDoneTab() ? undefined : doc.lists.find((l) => l.id === activeId) || doc.lists[0];
+
+  // Whichever set of items the current tab is showing.
+  const visibleItems = () => (onDoneTab() ? doc.completed : sorted());
 
   function setActive(id) {
     activeId = id;
@@ -133,8 +160,10 @@
 
   // Called after anything replaces `doc` — the active list may not exist there.
   function ensureActive() {
-    if (!doc.lists.some((l) => l.id === activeId)) setActive(doc.lists[0]?.id ?? null);
-    if (!activeList()?.items.some((i) => i.id === expandedId)) expandedId = null;
+    if (!onDoneTab() && !doc.lists.some((l) => l.id === activeId)) {
+      setActive(doc.lists[0]?.id ?? null);
+    }
+    if (!visibleItems().some((i) => i.id === expandedId)) expandedId = null;
   }
 
   const sorted = () => (activeList()?.items ?? []).slice().sort((a, b) => a.rank - b.rank);
@@ -170,6 +199,8 @@
   // into that slot and pushes whatever was there (and everything below) down
   // one; the slot the item vacated closes up.
   function setRank(id, newRank) {
+    const list = activeList();
+    if (!list) return; // no ranking on the finished tab
     const items = sorted();
     const from = items.findIndex((i) => i.id === id);
     if (from < 0) return;
@@ -178,7 +209,7 @@
     const to = Math.min(Math.max(newRank, 1), items.length + 1);
     items.splice(to - 1, 0, item);
     items.forEach((it, i) => (it.rank = i + 1));
-    activeList().items = items;
+    list.items = items;
   }
 
   const renumber = () => sorted().forEach((it, i) => (it.rank = i + 1));
@@ -238,6 +269,21 @@
     add.setAttribute("aria-label", "New list");
     add.addEventListener("click", addList);
     frag.appendChild(add);
+
+    // Pinned after the + button: it isn't a list you add items to, and it can't
+    // be renamed or deleted, so it carries none of the usual tab handlers.
+    const done = document.createElement("div");
+    done.className = "tab tab-done" + (onDoneTab() ? " active" : "");
+    done.dataset.id = DONE_ID;
+
+    const doneName = document.createElement("button");
+    doneName.type = "button";
+    doneName.className = "tab-name";
+    doneName.textContent = DONE_NAME;
+    doneName.title = "Everything you've finished";
+    doneName.addEventListener("click", () => selectList(DONE_ID));
+    done.appendChild(doneName);
+    frag.appendChild(done);
 
     els.tabs.replaceChildren(frag);
     els.tabs.querySelector(".tab.active")?.scrollIntoView({ block: "nearest", inline: "nearest" });
@@ -379,38 +425,71 @@
   }
 
   function render() {
-    const items = sorted();
-    els.list.replaceChildren(...items.map(renderItem));
+    const done = onDoneTab();
+    const items = visibleItems();
+
+    els.list.replaceChildren(...items.map((it) => renderItem(it, done)));
+
     els.empty.hidden = items.length > 0;
-    els.addBtn.disabled = items.length >= cfg.MAX_ITEMS;
-    els.fullNote.hidden = items.length < cfg.MAX_ITEMS;
+    els.empty.textContent = done
+      ? "Nothing finished yet. Items you nail land here."
+      : "Nothing here yet. Add your first item.";
+
+    // Nothing gets added to the finished tab by hand.
+    els.addBtn.hidden = done;
+    els.addBtn.disabled = !done && items.length >= cfg.MAX_ITEMS;
+
+    const atCap = done ? items.length >= cfg.MAX_COMPLETED : items.length >= cfg.MAX_ITEMS;
+    els.fullNote.hidden = !atCap;
+    els.fullNote.textContent = done
+      ? `Keeping the ${cfg.MAX_COMPLETED} most recent. Older ones drop off as you finish more.`
+      : `List is full at ${cfg.MAX_ITEMS} items. Delete something to add more.`;
   }
 
-  function renderItem(item) {
+  // Compact date for the finished tab. Year only when it isn't this one, so the
+  // column stays narrow for the common case.
+  function doneDate(iso) {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "—";
+    const opts = { day: "numeric", month: "short" };
+    if (d.getFullYear() !== new Date().getFullYear()) opts.year = "2-digit";
+    return d.toLocaleDateString(undefined, opts);
+  }
+
+  function renderItem(item, done = false) {
     const count = activeList()?.items.length ?? 0;
     const li = document.createElement("li");
     li.className = "item" + (item.id === expandedId ? " open" : "");
     li.dataset.id = item.id;
 
-    // --- rank dropdown: 1..MAX_ITEMS, with ranks past the end of the list
-    // disabled so a pick can never land somewhere surprising. Grows beyond
-    // MAX_ITEMS only if a hand-edited file arrived with more items than that.
-    const rank = document.createElement("select");
-    rank.className = "rank";
-    rank.setAttribute("aria-label", `Ranking for ${item.title || "untitled item"}`);
-    for (let n = 1; n <= Math.max(cfg.MAX_ITEMS, count); n++) {
-      const opt = document.createElement("option");
-      opt.value = String(n);
-      opt.textContent = String(n);
-      opt.disabled = n > count;
-      opt.selected = n === item.rank;
-      rank.appendChild(opt);
+    let lead;
+    if (done) {
+      // The ranking is meaningless once it's finished; the date is what you want.
+      lead = document.createElement("span");
+      lead.className = "done-date";
+      lead.textContent = doneDate(item.completedAt);
+      lead.title = item.fromList ? `Finished from “${item.fromList}”` : "Finished";
+    } else {
+      // --- rank dropdown: 1..MAX_ITEMS, with ranks past the end of the list
+      // disabled so a pick can never land somewhere surprising. Grows beyond
+      // MAX_ITEMS only if a hand-edited file arrived with more items than that.
+      lead = document.createElement("select");
+      lead.className = "rank";
+      lead.setAttribute("aria-label", `Ranking for ${item.title || "untitled item"}`);
+      for (let n = 1; n <= Math.max(cfg.MAX_ITEMS, count); n++) {
+        const opt = document.createElement("option");
+        opt.value = String(n);
+        opt.textContent = String(n);
+        opt.disabled = n > count;
+        opt.selected = n === item.rank;
+        lead.appendChild(opt);
+      }
+      lead.addEventListener("change", () => {
+        setRank(item.id, Number(lead.value));
+        touch();
+        render();
+      });
     }
-    rank.addEventListener("change", () => {
-      setRank(item.id, Number(rank.value));
-      touch();
-      render();
-    });
 
     // --- collapsed title
     const titleBtn = document.createElement("button");
@@ -443,7 +522,7 @@
 
     const row = document.createElement("div");
     row.className = "row";
-    row.append(rank, titleBtn, titleInput, chev);
+    row.append(lead, titleBtn, titleInput, chev);
 
     // --- expanded panel
     const content = document.createElement("textarea");
@@ -463,7 +542,16 @@
     del.addEventListener("click", () => askDelete(item.id));
 
     const actions = document.createElement("div");
-    actions.className = "panel-actions";
+    actions.className = "panel-actions" + (done ? " right" : "");
+
+    if (!done) {
+      const nailed = document.createElement("button");
+      nailed.type = "button";
+      nailed.className = "success";
+      nailed.textContent = "Nailed It!";
+      nailed.addEventListener("click", () => completeItem(item.id));
+      actions.appendChild(nailed);
+    }
     actions.appendChild(del);
 
     const panel = document.createElement("div");
@@ -513,8 +601,36 @@
     els.list.querySelector(`[data-id="${CSS.escape(item.id)}"] .title-input`)?.focus();
   }
 
+  // Out of the list, onto the finished pile. The rank it vacated closes up, and
+  // the source list's name rides along so the provenance isn't lost when that
+  // list is later renamed or deleted.
+  function completeItem(id) {
+    const list = activeList();
+    if (!list) return;
+    const idx = list.items.findIndex((i) => i.id === id);
+    if (idx < 0) return;
+
+    const [item] = list.items.splice(idx, 1);
+    doc.completed.unshift({
+      id: item.id,
+      title: item.title,
+      content: item.content,
+      createdAt: item.createdAt,
+      completedAt: now(),
+      fromList: list.name,
+    });
+    if (doc.completed.length > cfg.MAX_COMPLETED) {
+      doc.completed.length = cfg.MAX_COMPLETED; // oldest fall off the end
+    }
+
+    if (expandedId === id) expandedId = null;
+    renumber();
+    touch();
+    render();
+  }
+
   function askDelete(id) {
-    const item = activeList()?.items.find((i) => i.id === id);
+    const item = visibleItems().find((i) => i.id === id);
     if (!item) return;
     pendingDeleteId = id;
     els.deleteWhat.textContent = item.title
@@ -524,12 +640,16 @@
   }
 
   function doDelete() {
-    const list = activeList();
-    if (!list) return;
-    list.items = list.items.filter((i) => i.id !== pendingDeleteId);
+    if (onDoneTab()) {
+      doc.completed = doc.completed.filter((i) => i.id !== pendingDeleteId);
+    } else {
+      const list = activeList();
+      if (!list) return;
+      list.items = list.items.filter((i) => i.id !== pendingDeleteId);
+      renumber();
+    }
     if (expandedId === pendingDeleteId) expandedId = null;
     pendingDeleteId = null;
-    renumber();
     touch();
     render();
   }

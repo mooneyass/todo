@@ -9,4 +9,7 @@ window.TODO_CONFIG = {
 
   // Ranking dropdown runs 1..MAX_ITEMS, and the list is capped at that many items.
   MAX_ITEMS: 20,
+
+  // How many finished items the "Nailed It!" tab keeps. Oldest drop off first.
+  MAX_COMPLETED: 50,
 };

@@ -177,7 +177,7 @@ window.Drive = (() => {
 
   // Shape and migration are the app's business; this file only moves bytes.
   function emptyDoc() {
-    return { schema: 2, updatedAt: new Date().toISOString(), lists: [] };
+    return { schema: 3, updatedAt: new Date().toISOString(), lists: [], completed: [] };
   }
 
   const serialise = (doc) => JSON.stringify(doc, null, 2);

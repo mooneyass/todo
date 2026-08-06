@@ -11,6 +11,10 @@ so Windows and Android read and write the same list.
   press and hold on a phone. The active tab gets a `×` to delete that list; the last remaining
   list can't be deleted. Which tab you're on is remembered per device, so the phone and the PC
   can sit on different lists.
+- **"Nailed It!" finishes an item.** It leaves its list, the rank it held closes up, and it
+  lands in the pinned **Nailed It!** tab after the `+` — showing the date you finished it
+  instead of a ranking. Everything finished goes there whatever list it came from, and it
+  stays even if that list is later deleted. Keeps the 50 most recent; older ones drop off.
 - **Storage** is `tododata/todos.json` in your Drive — every list in the one file. Both devices
   use that same file.
 - **Conflicts** are detected, not guessed at: if the other device saved first, you're asked
@@ -192,7 +196,7 @@ ever want to.
 
 ```json
 {
-  "schema": 2,
+  "schema": 3,
   "updatedAt": "2026-08-04T18:20:11.000Z",
   "lists": [
     {
@@ -209,16 +213,32 @@ ever want to.
         }
       ]
     }
+  ],
+  "completed": [
+    {
+      "id": "4a1d…",
+      "title": "Book the ferry",
+      "content": "",
+      "createdAt": "2026-08-01T09:12:00.000Z",
+      "completedAt": "2026-08-04T17:55:03.000Z",
+      "fromList": "To-Do"
+    }
   ]
 }
 ```
 
 Ranks are always the contiguous run `1..n` within each list.
 
-The app repairs whatever it finds: a `schema: 1` file (a flat `items` array, from before
-lists existed) is migrated into a single list named "To-Do", missing fields get defaults, and
-ranks are renumbered. So hand-editing is safe — you can't corrupt it into a state that won't
-load. Which tab is active is *not* stored here; that's per-device, in browser storage.
+`completed` sits at the root rather than inside a list — that's deliberate, so finished items
+survive the list they came from being deleted. `fromList` records where each one started, and
+is kept even though the UI doesn't currently show it, since that history can't be recovered
+once it's gone. Newest first, trimmed to 50.
+
+The app repairs whatever it finds. A `schema: 1` file (a flat `items` array, from before lists
+existed) becomes a single list named "To-Do"; a `schema: 2` file simply has no finished items
+yet. Missing fields get defaults and ranks are renumbered, so hand-editing is safe — you can't
+corrupt it into a state that won't load. Which tab is active is *not* stored here; that's
+per-device, in browser storage.
 
 ---
 
