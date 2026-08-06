@@ -5,7 +5,7 @@ so Windows and Android read and write the same list.
 
 - **One item = a rank, a title, and a content box.** Collapsed, you see only the rank and title.
   Click the title to open the content box.
-- **Rank dropdown is 1–20.** Pick a rank and the item that held it — plus everything below —
+- **Rank dropdown is 1–50.** Pick a rank and the item that held it — plus everything below —
   shifts down one. The slot the item came from closes up. The cap is per list.
 - **Tabs across the top are your lists.** `+` adds one. Double-click a tab to rename it, or
   press and hold on a phone. The active tab gets a `×` to delete that list; the last remaining

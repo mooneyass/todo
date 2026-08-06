@@ -51,7 +51,8 @@
     <ul id="list" class="list"></ul>
     <p id="empty" class="muted empty" hidden>Nothing here yet. Add your first item.</p>
     <button id="add-btn" class="add" type="button">+ Add item</button>
-    <p id="full-note" class="muted note" hidden>List is full at 20 items. Delete something to add more.</p>
+    <!-- Text is filled in by render(), which knows the current caps. -->
+    <p id="full-note" class="muted note" hidden></p>
     <p class="muted hint">Double-click a tab to rename it &mdash; on a phone, press and hold. <b>+</b> starts a new list.</p>
   </section>
 </main>

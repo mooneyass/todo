@@ -8,7 +8,7 @@ window.TODO_CONFIG = {
   FILE_NAME: "todos.json",
 
   // Ranking dropdown runs 1..MAX_ITEMS, and the list is capped at that many items.
-  MAX_ITEMS: 20,
+  MAX_ITEMS: 50,
 
   // How many finished items the "Nailed It!" tab keeps. Oldest drop off first.
   MAX_COMPLETED: 50,
