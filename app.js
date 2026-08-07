@@ -73,6 +73,8 @@
 
   const now = () => new Date().toISOString();
 
+  const MIN_NOTE_H = 108; // matches .content min-height in app.css
+
   function setStatus(text, warn = false) {
     els.status.textContent = text;
     els.status.classList.toggle("warn", warn);
@@ -433,6 +435,11 @@
 
     els.list.replaceChildren(...items.map((it) => renderItem(it, done)));
 
+    // Deliberately not inside requestAnimationFrame: that never fires while the
+    // window isn't painting (background tab, occluded desktop window), which
+    // would leave the box at its minimum height until something forced a redraw.
+    sizeOpenNote();
+
     els.empty.hidden = items.length > 0;
     els.empty.textContent = done
       ? "Nothing finished yet. Items you nail land here."
@@ -602,13 +609,21 @@
     panel.append(content, actions);
 
     li.append(row, panel);
-    if (item.id === expandedId) requestAnimationFrame(() => autoGrow(content));
     return li;
   }
 
+  // Grows the notes box to fit its text. "auto" first so it can shrink again
+  // when text is deleted, not just grow.
   function autoGrow(ta) {
     ta.style.height = "auto";
-    ta.style.height = Math.max(ta.scrollHeight + 2, 108) + "px";
+    ta.style.height = Math.max(ta.scrollHeight + 2, MIN_NOTE_H) + "px";
+  }
+
+  // Called after the list is in the document — a textarea that hasn't been laid
+  // out reports no scrollHeight, so this can't be done while building the row.
+  function sizeOpenNote() {
+    const ta = els.list.querySelector(".item.open .content");
+    if (ta) autoGrow(ta);
   }
 
   function toggle(id) {

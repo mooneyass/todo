@@ -4,7 +4,8 @@ A ranked to-do list that stores its data as a single JSON file in your own Googl
 so Windows and Android read and write the same list.
 
 - **One item = a rank, a title, and a content box.** Collapsed, you see only the rank and title.
-  Click the title to open the content box.
+  Click the title to open the content box, which sizes itself to fit the whole note — however
+  long — and shrinks back as you delete text.
 - **Rank dropdown is 1–50.** Pick a rank and the item that held it — plus everything below —
   shifts down one. The slot the item came from closes up. The cap is per list.
 - **Tabs across the top are your lists.** `+` adds one. Double-click a tab to rename it, or
