@@ -868,8 +868,9 @@
     els.signinError.hidden = !message;
     els.signinError.textContent = message || "";
 
-    // The desktop launcher may fall back to a different port, and Google matches
-    // origins exactly — so when sign-in fails, say which origin needs allowing.
+    // Google matches origins exactly, so when sign-in fails the most likely
+    // cause is this origin not being on the list. Name it rather than make
+    // them guess.
     els.originHint.hidden = !message;
     els.originHint.textContent = message
       ? `This app is running at ${location.origin}. That exact address has to be ` +

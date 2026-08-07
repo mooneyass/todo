@@ -66,18 +66,13 @@ You need an OAuth client ID so the app can ask for permission to your Drive.
 
    ```
    http://localhost:8000
-   http://localhost:47820
-   http://localhost:47821
    https://YOUR-GITHUB-USERNAME.github.io
    ```
 
-   The two odd-numbered ports are fallbacks for the desktop executable. Port 8000 is a
-   popular one — plenty of other software grabs it — and if Round-Tuit can't have it, it moves
-   to the next in the list. Sign-in only works on origins listed here, so register all
-   three or a fallback will fail to sign in.
-
-   (Add the second one after you know your GitHub Pages address — you can edit this later.
-   Origins only: no paths, no trailing slash. No redirect URI is needed.)
+   The first is for running it locally, the second for the deployed site. Add the second once
+   you know your GitHub Pages address — you can edit this later. Origins only: no paths, no
+   trailing slash, and no redirect URI is needed. Sign-in only works from origins listed here,
+   so if you ever serve the app from somewhere new, add that origin too.
 
 6. **Paste the client ID into `config.js`:**
 
@@ -124,41 +119,7 @@ in it. Your to-do data lives in your Drive, never in the repo.
 
 ---
 
-## 4. Windows executable (portable)
-
-`dist/RoundTuit.exe` is one self-contained file, about 80MB, holding the web app and a Node
-runtime. Copy it to any Windows PC — USB stick, network share, wherever — and double-click.
-No install, no admin rights, nothing left behind.
-
-It serves the app on `http://localhost:8000` and opens it in a chromeless Edge or Chrome
-window, so it looks like a desktop app rather than a browser tab. There's no console window;
-closing the app window quits it, via a heartbeat the launcher injects into the page.
-
-To rebuild after changing any web file:
-
-```bash
-./desktop/build.ps1
-```
-
-Things worth knowing:
-
-- **It needs one of ports 8000, 47820 or 47821**, and tries them in that order. It can't just
-  grab any free port, because Google only accepts sign-in from origins registered on the OAuth
-  client. If all three are taken, it explains which and exits.
-- **Each port is claimed on both IPv4 and IPv6.** `localhost` resolves to `::1` and
-  `127.0.0.1`, and browsers usually try `::1` first — while Windows will happily let you bind
-  `127.0.0.1:8000` when another program already holds `[::]:8000`. Binding only IPv4 meant the
-  browser could land on that other program instead, showing *its* page inside the Round-Tuit
-  window. If either family is unavailable, the port is skipped entirely.
-- **Running it twice is harmless.** The second copy notices the first and just opens a window.
-- **Windows SmartScreen may warn on first run**, because the exe isn't code-signed. *More info
-  → Run anyway*. Some antivirus is also suspicious of unsigned Node executables.
-- **It doesn't auto-update.** Rebuild and re-copy after changing the app.
-- **`config.js` beside the exe overrides the embedded one**, so you can change the client ID
-  without rebuilding.
-- **Your data isn't in the exe.** It's in Drive, so every PC shows the same lists.
-
-## 5. Install it as a web app
+## 4. Install it as a web app
 
 Easiest on every platform: open the site and press the **Install** button in the top bar. It
 appears only when the browser considers the app installable and it isn't installed already, so
@@ -266,8 +227,5 @@ per-device, in browser storage.
 | `sw.js` | Service worker — makes it installable and work offline |
 | `dev/mock.js` | Fake Drive for `?mock=1`. Dev only; inert otherwise |
 | `manifest.webmanifest`, `icons/` | Install metadata and app icons |
-| `desktop/server.js` | The portable exe: serves the embedded app, opens the window |
-| `desktop/sea-config.json` | Which files get embedded. Also the dev-mode allowlist |
-| `desktop/build.ps1` | Builds `dist/RoundTuit.exe` |
 
 Changing a shell file? Bump `CACHE` in `sw.js` so devices drop the old copy.
